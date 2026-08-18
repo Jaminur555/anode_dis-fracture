@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Environments
+.venv/
+venv/
+
+# Editors / tools
+.claude/
+.vscode/
+.idea/
+.ruff_cache/
+
+# Manuscript and private working documents stay out of the repo
+*.docx
+*.pdf.tmp
+
+# OS
+Thumbs.db
+.DS_Store
