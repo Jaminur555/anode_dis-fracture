@@ -28,11 +28,11 @@ predicts where that starts, for the two standard anode chemistries:
   linear elasticity is valid. Peak stress ≈ 18 MPa of tension at the center during
   1C lithiation; critical radius **28 µm**, far above the commercial 5–15 µm → safe.
 - **Silicon, the hard one.** Swelling is huge (Ω·c<sub>max</sub> ≈ 300 %) and the
-  concentration gradient is nearly a step. The raw elastic solution predicts 113 GPa —
-  above silicon's own stiffness (E = 90 GPa) — the model flagging its own breakdown.
-  An elastic-plastic (Tresca yield) core-shell correction restores consistency and
-  moves the critical radius to **331 nm**, inside the experimentally observed
-  150–300 nm fragmentation window.
+  concentration gradient is nearly a step. The raw elastic solution predicts 113 GPa,
+  above silicon's own stiffness (E = 90 GPa). That is the model flagging its own
+  breakdown. An elastic-plastic (Tresca yield) core-shell correction restores
+  consistency and moves the critical radius to **331 nm**, inside the
+  experimentally observed 150–300 nm fragmentation window.
 
 The pipeline mirrors the paper's method section, one module each:
 
@@ -40,7 +40,7 @@ The pipeline mirrors the paper's method section, one module each:
 materials.py            particle & material parameters (dataclass, SI units)
       │
       ▼
-diffusion.py            lithium transport — implicit finite volumes, backward Euler,
+diffusion.py            lithium transport: implicit finite volumes, backward Euler,
       │                  constant (galvanostatic) surface flux
       ▼
 christensen_newman.py   closed-form linear-elastic stress field (σr, σθ)
@@ -72,8 +72,8 @@ with exit code 0/1 so it can run in CI. Two tiers:
 - **Tier A, exact answers.** Manufactured solutions with known closed-form stress
   (uniform and linear concentration profiles), exact lithium mass balance (~1e-13),
   the analytic series solution for constant-flux diffusion, and continuity of the
-  yield condition across the elastic-plastic boundary — the check that catches a
-  wrong prefactor in the Tresca assembly.
+  yield condition across the elastic-plastic boundary. This is the check that
+  catches a wrong prefactor in the Tresca assembly.
 - **Tier B, frozen benchmarks.** The paper's headline numbers with explicit
   tolerances, so silent behavioral drift shows up as a failure.
 
@@ -84,7 +84,7 @@ Current state: **25 / 25 checks pass.**
 | | Graphite | Silicon |
 |---|---|---|
 | R, D | 8 µm, 3.9&times;10<sup>-14</sup> m<sup>2</sup>/s | 3 µm, 1.0&times;10<sup>-16</sup> m<sup>2</sup>/s |
-| E, ν, σ<sub>Y</sub> | 15 GPa, 0.30, — (elastic) | 90 GPa, 0.22, 1.5 GPa |
+| E, ν, σ<sub>Y</sub> | 15 GPa, 0.30, N/A (elastic) | 90 GPa, 0.22, 1.5 GPa |
 | Eigenstrain Ω·c<sub>max</sub> | 0.084 (~8 %) | 3.00 (~300 %) |
 | Raw elastic peak hoop | 18.2 MPa (center) | 113 GPa > E: small-strain breakdown |
 | Corrected (Tresca) | N/A | r<sub>p</sub>/R = 0.52; center 2.42 GPa; surface −1.49 GPa |
@@ -99,7 +99,7 @@ C-rate sweep at SOC 0.5 (peak tensile hoop):
 
 Sensitivity of the silicon R<sub>crit</sub>: E, Ω, K<sub>IC</sub> at ±20 % → 296–366 nm;
 σ<sub>Y</sub> → 324–347 nm; D → 305–354 nm; flaw depth a = 0.05–0.2R → 280–405 nm.
-The result is robust — the correction, not parameter tuning, brings R<sub>crit</sub>
+The result is robust: the correction, not parameter tuning, brings R<sub>crit</sub>
 into the experimental window.
 
 ## Figures
@@ -107,7 +107,7 @@ into the experimental window.
 All six figures are written by `generate_result.py` to `results/figures/`
 (also committed as reproducibility evidence).
 
-**1 · Concentration profiles, why the two materials differ (1C)**
+**1. Concentration profiles, why the two materials differ (1C)**
 
 <p align="center">
   <img src="results/figures/fig1_concentration_profiles.png" width="720"
@@ -115,23 +115,23 @@ All six figures are written by `generate_result.py` to `results/figures/`
 </p>
 
 *Graphite (left) stays nearly flat: lithium has time to spread. Silicon (right) is a
-near-step — a thin lithiated shell over an empty core — because its diffusion
+near-step, a thin lithiated shell over an empty core, because its diffusion
 coefficient is ~400× smaller. That step is what makes silicon stress so extreme.*
 
-**2 · Stress profiles (1C, SOC = 0.5)**
+**2. Stress profiles (1C, SOC = 0.5)**
 
 <p align="center">
   <img src="results/figures/fig2_stress_profiles.png" width="620"
        alt="Hoop and radial stress profiles: graphite elastic, silicon raw and corrected">
 </p>
 
-*(a) Graphite: the classic elastic picture — tensile core, compressive surface,
-peak 18 MPa. (b) Silicon, raw elastic: 113 GPa, beyond ±E (dashed lines) — the model
-announcing it cannot be trusted here. (c) Silicon, corrected: a yielded shell
+*(a) Graphite: the classic elastic picture, with a tensile core, compressive
+surface, and peak 18 MPa. (b) Silicon, raw elastic: 113 GPa, beyond ±E (dashed
+lines); the model is announcing it cannot be trusted here. (c) Silicon, corrected: a yielded shell
 (r<sub>p</sub>/R = 0.52) around an elastic core; only the stress difference is pinned
 at yield, so the core center can still reach +2.42 GPa in tension.*
 
-**3 · C-rate sweep (SOC = 0.5)**
+**3. C-rate sweep (SOC = 0.5)**
 
 <p align="center">
   <img src="results/figures/fig3_crate_sweep.png" width="720"
@@ -140,10 +140,10 @@ at yield, so the core center can still reach +2.42 GPa in tension.*
 
 *Graphite (a) scales in step with the C-rate (9 → 89 MPa from C/2 to 5C). Silicon (b)
 does the opposite: faster charging grows the yielded shell (r<sub>p</sub>/R from 0.36
-to 0.77), which shields the core — center tension drops from 4.1 to 0.9 GPa while the
-surface stays pinned at −σ<sub>Y</sub>.*
+to 0.77), which shields the core, so center tension drops from 4.1 to 0.9 GPa while
+the surface stays pinned at −σ<sub>Y</sub>.*
 
-**4 · Griffith screening and critical radius (headline)**
+**4. Griffith screening and critical radius (headline)**
 
 <p align="center">
   <img src="results/figures/fig4_critical_radius.png" width="720"
@@ -154,7 +154,7 @@ surface stays pinned at −σ<sub>Y</sub>.*
 the shaded region is fracture. Graphite: 28.1 µm, well above the commercial 5–15 µm
 → safe. Silicon: 331 nm, inside the experimentally observed 150–300 nm window.*
 
-**5 · Grid and time-step convergence**
+**5. Grid and time-step convergence**
 
 <p align="center">
   <img src="results/figures/fig5_convergence.png" width="720"
@@ -166,7 +166,7 @@ converges by N ≈ 100 cells. The silicon raw surface peak converges slowly (a
 near-step gradient needs fine cells), so N = 400 is used for elastic diagnostics;
 corrected results are yield-pinned and barely move, so N = 100 suffices there.*
 
-**6 · Sensitivity of the silicon R<sub>crit</sub>**
+**6. Sensitivity of the silicon R<sub>crit</sub>**
 
 <p align="center">
   <img src="results/figures/fig6_sensitivity.png" width="720"
@@ -190,9 +190,9 @@ from the physics of the correction, not from parameter tuning.*
   condition, a plastic shell grows inward from the surface
   (σ<sub>θ</sub> − σ<sub>r</sub> = ±σ<sub>Y</sub>). Its interface radius r<sub>p</sub>
   is found with a root finder (brentq), and the elastic core inside carries the
-  shell's traction. Note what yield does and does not bound: only the stress
-  *difference* — the hydrostatic tension at the core center can legitimately
-  exceed σ<sub>Y</sub>.
+  shell's traction. Note what yield does and does not bound. Only the stress
+  *difference* is limited; the hydrostatic tension at the core center can
+  legitimately exceed σ<sub>Y</sub>.
 - **Fracture.** Griffith surface-flaw strength σ<sub>f</sub> = K<sub>IC</sub> / √(aπR)
   with flaw depth a = 0.1R. R<sub>crit</sub> is where peak σ<sub>θ</sub>(R) =
   σ<sub>f</sub>(R), found by bracketing + brentq; the solver raises an error rather
@@ -202,8 +202,8 @@ from the physics of the correction, not from parameter tuning.*
 
 Stated plainly (and in the paper):
 
-- Material properties are constant (D, E, ν, Ω, K<sub>IC</sub>, σ<sub>Y</sub>) — no
-  concentration dependence, and swelling is isotropic (no graphite anisotropy).
+- Material properties are constant (D, E, ν, Ω, K<sub>IC</sub>, σ<sub>Y</sub>), with
+  no concentration dependence, and swelling is isotropic (no graphite anisotropy).
   The ±20 % sweep (Fig. 6) bounds the effect of these simplifications on the
   silicon R<sub>crit</sub> (296–366 nm).
 - Constant-flux Fickian diffusion allows c<sub>surf</sub> > c<sub>max</sub>
@@ -237,4 +237,4 @@ requirements.txt           pinned dependencies
 
 ## License
 
-MIT — see `LICENSE`.
+MIT. See `LICENSE`.
